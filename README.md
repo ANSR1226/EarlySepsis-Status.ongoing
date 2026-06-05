@@ -233,23 +233,3 @@ The intended project flow is:
 8. Serve predictions and explanations through the Streamlit app in `src/earlysepsis/app/`. 
 
 ***
-
-## Shorter version
-
-If you want a shorter README subsection, use this:
-
-- `data/` — Raw, interim, and processed ICU sepsis datasets.
-- `notebooks/` — EDA, missingness analysis, feature engineering, modeling, SHAP, and error analysis experiments.
-- `src/earlysepsis/data/` — Data loading, schema checks, and train/validation splitting.
-- `src/earlysepsis/features/` — Rolling windows, deltas, missingness features, and SOFA-related engineering.
-- `src/earlysepsis/models/` — Logistic regression, Random Forest, XGBoost, calibration, prediction, and threshold selection.
-- `src/earlysepsis/evaluation/` — Metrics, plots, calibration analysis, and lead-time evaluation.
-- `src/earlysepsis/explainability/` — SHAP computation and clinician-friendly explanation text.
-- `src/earlysepsis/app/` — Streamlit dashboard and UI logic.
-- `src/earlysepsis/pipelines/` — Shared training, preprocessing, and inference workflows.
-- `src/earlysepsis/utils/` — Config, logging, paths, and helper utilities.
-- `models/` — Saved model binaries and preprocessing artifacts.
-- `reports/` — Output figures, tables, and performance summaries.
-- `tests/` — Unit and smoke tests.
-- `scripts/` — CLI runners for training, inference, sample input generation, and metric export.
-- `deployment/` — Docker and Streamlit deployment configuration.
