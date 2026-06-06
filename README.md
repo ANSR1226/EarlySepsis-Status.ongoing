@@ -1,6 +1,8 @@
-    ## Project Structure
+# 05/MAY/2026
 
-This repository is organized to support the full lifecycle of an early sepsis prediction system: data ingestion, exploratory analysis, temporal feature engineering, supervised model training, calibration, explainability, evaluation, testing, and Streamlit deployment. The structure keeps experimental work in notebooks, reusable logic in `src/`, trained artifacts in `models/`, and outputs such as plots and metrics in `reports/`, which is a common and maintainable layout for Python ML projects.
+## Project Structure
+
+This repository is organized to support the full lifecycle of an early sepsis prediction system: data ingestion, exploratory analysis, temporal feature engineering, supervised model training, calibration, explainability, evaluation, testing, and Streamlit deployment. The structure keeps experimental work in notebooks, reusable logic in `src/`, trained artifacts in `models/`, and outputs such as plots and metrics in `reports/`.
 
 ```bash
 earlysepsis/
@@ -69,167 +71,169 @@ earlysepsis/
     └── streamlit_config.toml
 ```
 
-## Root files
+### Root files
 
-- `README.md` — Main project documentation, problem motivation, setup steps, usage instructions, and results summary. A README is the standard entry point for understanding and running a repository.
-- `requirements.txt` — Lists Python dependencies needed to reproduce the project environment, including data processing, modeling, explainability, and Streamlit packages.
-- `.gitignore` — Prevents unnecessary or sensitive files such as virtual environments, cache folders, raw model binaries, and local secrets from being committed to Git.
-- `.env.example` — Template for environment variables such as data paths, app settings, or optional deployment secrets; users copy this to `.env` and fill in local values.
+- `README.md` — Main project documentation, problem motivation, setup steps, usage instructions, and results summary.  
+- `requirements.txt` — Python dependencies for data processing, modeling, explainability, and Streamlit.  
+- `.gitignore` — Excludes virtual environments, caches, model binaries, and local secrets from version control.  
+- `.env.example` — Template for environment variables (paths, app settings, optional secrets).
 
-## `data/`
+### `data/`
 
-This folder stores all dataset files at different stages of the ML pipeline so raw data remains untouched and processed data can be reproduced cleanly, which is a standard practice in data science project organization.
+- `data/raw/` — Original downloaded dataset files exactly as obtained from the source.  
+- `data/raw/training/` — Training patient files used for model development.  
+- `data/raw/validation/` — Validation split for threshold tuning, calibration, and model comparison.  
+- `data/raw/sample_patient/` — Small sample patient records for debugging, demos, and app testing.  
+- `data/interim/` — Intermediate artifacts such as merged hourly tables, cleaned records, or partially engineered features.  
+- `data/processed/` — Final model-ready datasets after imputation, missingness features, rolling windows, deltas, and label alignment.
 
-- `data/raw/` — Original downloaded dataset files exactly as obtained from the source.
-- `data/raw/training/` — Training patient files used for model development.
-- `data/raw/validation/` — Validation split used for threshold tuning, calibration, and model comparison.
-- `data/raw/sample_patient/` — Small sample patient records used for debugging, demos, and app input testing.
-- `data/interim/` — Intermediate outputs created during preprocessing, such as merged hourly tables, cleaned records, or partially engineered features.
-- `data/processed/` — Final model-ready datasets after imputation strategy, missingness indicators, rolling-window features, deltas, and label alignment have been applied.
+### `notebooks/`
 
-## `notebooks/`
+- `01_data_understanding.ipynb` — Inspect dataset format, patient-level files, columns, label distribution, and clinical variable overview.  
+- `02_eda_missingness.ipynb` — Explore missing values, feature sparsity, clinically meaningful absence of measurements, and class-conditional distributions.  
+- `03_feature_engineering.ipynb` — Prototype temporal features (rolling stats, trends, time-since-last-measurement, etc.).  
+- `04_baseline_model.ipynb` — Build and evaluate a logistic regression baseline.  
+- `05_boosting_model.ipynb` — Train and tune tree-based / boosting models (RF, XGBoost, LightGBM).  
+- `06_calibration_shap.ipynb` — Perform probability calibration and SHAP-based explainability.  
+- `07_error_analysis.ipynb` — Investigate false positives/negatives, lead time, and subgroup performance.
 
-This folder is for experimentation, exploratory data analysis, and research workflow. Notebooks are useful for iterative analysis, but production logic should eventually move into reusable Python modules inside `src/`.
+### `src/earlysepsis/`
 
-- `01_data_understanding.ipynb` — Initial inspection of dataset format, patient-level files, columns, label distribution, and clinical variable overview.
-- `02_eda_missingness.ipynb` — Analysis of missing values, feature sparsity, clinically meaningful absence of measurements, and sepsis vs non-sepsis distributions.
-- `03_feature_engineering.ipynb` — Prototyping of temporal features such as rolling means, rolling standard deviations, trend slopes, deltas, and time-since-last-measurement features.
-- `04_baseline_model.ipynb` — Interpretable baseline modeling, typically logistic regression with class weighting and basic evaluation.
-- `05_boosting_model.ipynb` — Training and tuning of stronger models such as Random Forest, XGBoost, or LightGBM on engineered features.
-- `06_calibration_shap.ipynb` — Probability calibration, SHAP analysis, feature importance interpretation, and local explanation testing.
-- `07_error_analysis.ipynb` — Investigation of false positives, false negatives, lead time behavior, subgroup performance, and failure modes.
+Main Python package with reusable source code.
 
-## `src/earlysepsis/`
+- `__init__.py` — Makes `earlysepsis` an importable package.
 
-This is the main Python package containing reusable source code. Keeping core logic here instead of inside notebooks or the Streamlit file improves maintainability, testing, and deployment readiness. 
+#### `src/earlysepsis/data/`
 
-### `src/earlysepsis/__init__.py`
-Marks `earlysepsis` as a Python package so modules can be imported cleanly across the project.
+- `loader.py` — Reads raw patient files, parses hourly records, returns standardized DataFrames.  
+- `schema.py` — Defines expected columns, types, feature groups, and label conventions.  
+- `validation.py` — Checks data quality (missing columns, invalid ranges, duplicates).  
+- `split.py` — Builds patient-level train/validation/test splits to avoid leakage.
 
-### `src/earlysepsis/data/`
-Handles dataset reading, schema checks, and patient-level splits.
+#### `src/earlysepsis/features/`
 
-- `loader.py` — Reads raw patient files, parses hourly records, and returns consistent pandas DataFrames.
-- `schema.py` — Defines expected columns, data types, feature groups, and label conventions.
-- `validation.py` — Validates raw data quality, missing columns, invalid value ranges, duplicate rows, and malformed records.
-- `split.py` — Creates train/validation/test splits at the patient level to avoid leakage across time rows.
+- `build_features.py` — Assembles full feature table (raw vars + rolling + trends + missingness + SOFA-like features).  
+- `rolling.py` — Computes rolling statistics over recent hours.  
+- `trends.py` — Computes deltas, slopes, and other trend descriptors.  
+- `missingness.py` — Builds missingness flags and time-since-last-observed features.  
+- `sofa.py` — Derives organ dysfunction features inspired by SOFA.
 
-### `src/earlysepsis/features/`
-Implements temporal and clinically motivated feature engineering.
+#### `src/earlysepsis/models/`
 
-- `build_features.py` — Main feature assembly module that combines raw variables, rolling statistics, trend features, missingness features, and SOFA-related features into one model-ready table.
-- `rolling.py` — Computes rolling mean, std, min, max, and other window-based summaries over the last few hours.
-- `trends.py` — Computes rates of change, deltas, slopes, and direction-of-change features over time.
-- `missingness.py` — Adds missingness indicators, forward-fill logic, decay features, and time-since-last-observed measurements.
-- `sofa.py` — Builds SOFA or SOFA-like organ dysfunction components from available vitals and lab values.
+- `train_logreg.py` — Train interpretable logistic regression baseline.  
+- `train_rf.py` — Train Random Forest model.  
+- `train_xgb.py` — Train tree-based boosting model (e.g. XGBoost).  
+- `calibrate.py` — Apply probability calibration methods.  
+- `predict.py` — Load trained models and produce risk predictions.  
+- `thresholding.py` — Select decision thresholds based on desired operating points.
 
-### `src/earlysepsis/models/`
-Contains supervised learning model code.
+#### `src/earlysepsis/evaluation/`
 
-- `train_logreg.py` — Trains the logistic regression baseline for interpretability and comparison.
-- `train_rf.py` — Trains a Random Forest model for nonlinear baseline performance and feature importance exploration.
-- `train_xgb.py` — Trains the main boosted tree model such as XGBoost or LightGBM for strong predictive performance.
-- `calibrate.py` — Applies probability calibration methods such as Platt scaling or isotonic regression.
-- `predict.py` — Loads trained pipelines and generates risk probabilities for new patient inputs.
-- `thresholding.py` — Selects decision thresholds based on recall, specificity, AUPRC, or clinical operating targets.
+- `metrics.py` — Compute AUROC, AUPRC, sensitivity, specificity, etc.  
+- `plots.py` — Create ROC/PR curves, feature importance, and other figures.  
+- `calibration.py` — Assess calibration using curves and metrics.  
+- `leadtime.py` — Quantify how early the model detects sepsis before onset.
 
-### `src/earlysepsis/evaluation/`
-Evaluates model quality using clinically meaningful metrics.
+#### `src/earlysepsis/explainability/`
 
-- `metrics.py` — Computes AUROC, AUPRC, sensitivity, specificity, precision, recall, F1, and confusion matrices.
-- `plots.py` — Generates ROC curves, PR curves, feature importance plots, missingness charts, and model comparison visuals.
-- `calibration.py` — Evaluates and visualizes calibration quality using calibration curves and related metrics.
-- `leadtime.py` — Measures how many hours before sepsis onset the model is able to raise an alert.
+- `shap_utils.py` — Compute and format SHAP values.  
+- `clinical_text.py` — Turn model explanations into clinician-friendly text.
 
-### `src/earlysepsis/explainability/`
-Makes the model clinically interpretable.
+#### `src/earlysepsis/app/`
 
-- `shap_utils.py` — Computes SHAP values for tree-based models and prepares global and patient-level explanations.
-- `clinical_text.py` — Converts raw explanation outputs into clinician-friendly language such as “rising lactate and falling MAP contributed to increased risk.”
+- `streamlit_app.py` — Main Streamlit app entrypoint.  
+- `ui_components.py` — Reusable UI elements.  
+- `patient_form.py` — Input form / upload interface for recent patient data.  
+- `visualizations.py` — Plot risk trajectories and SHAP-based explanations in the app.
 
-### `src/earlysepsis/app/`
-Contains the Streamlit application and UI-related logic. Streamlit best practice is to keep the app layer lightweight and move non-UI functionality into reusable modules.
+#### `src/earlysepsis/pipelines/`
 
-- `streamlit_app.py` — Main Streamlit entry point that loads the trained model, accepts user inputs, runs inference, and displays outputs.
-- `ui_components.py` — Reusable UI elements such as metric cards, warning banners, and result panels.
-- `patient_form.py` — Form or upload interface for entering a patient’s recent 6-hour vitals and lab history.
-- `visualizations.py` — App-side plotting utilities for SHAP bars, risk curves, and feature summaries.
+- `training_pipeline.py` — Orchestrate end-to-end training.  
+- `inference_pipeline.py` — Orchestrate end-to-end inference on new data.  
+- `preprocess_pipeline.py` — Shared preprocessing used in both training and inference.
 
-### `src/earlysepsis/pipelines/`
-Orchestrates end-to-end workflows.
+#### `src/earlysepsis/utils/`
 
-- `training_pipeline.py` — Full training pipeline from loading processed data to fitting models and saving artifacts.
-- `inference_pipeline.py` — End-to-end prediction flow used by the app for new patient data.
-- `preprocess_pipeline.py` — Shared preprocessing sequence used consistently in both training and inference.
+- `config.py` — Load YAML/env configuration.  
+- `logger.py` — Central logging configuration.  
+- `paths.py` — Centralize frequently used file paths.  
+- `helpers.py` — Miscellaneous helpers.
 
-### `src/earlysepsis/utils/`
-Stores general helper utilities used across modules.
+#### `src/earlysepsis/config/`
 
-- `config.py` — Loads YAML or environment-based configuration.
-- `logger.py` — Central logging setup for training runs, app events, and debugging.
-- `paths.py` — Centralized project path definitions so file locations are not hardcoded everywhere.
-- `helpers.py` — Miscellaneous shared helper functions.
+- `model_config.yaml` — Model hyperparameters and choices.  
+- `feature_config.yaml` — Feature selection and window settings.  
+- `app_config.yaml` — Streamlit UI and display configuration.
 
-### `src/earlysepsis/config/`
-Stores configuration files that make experiments easier to reproduce without changing code.
+### `models/`
 
-- `model_config.yaml` — Hyperparameters, model names, class-weight settings, and calibration options.
-- `feature_config.yaml` — Feature selection options, rolling window sizes, missingness settings, and inclusion of SOFA-related variables.
-- `app_config.yaml` — Streamlit-specific settings such as feature display names, alert thresholds, and UI behavior.
+- `baseline/` — Saved logistic regression and basic models.  
+- `xgboost/` — Saved boosting models and related artifacts.  
+- `calibrated/` — Calibrated versions of trained models.  
+- `artifacts/` — Shared components (scalers, encoders, feature lists, etc.).
 
-## `models/`
+### `reports/`
 
-This folder stores serialized model outputs and related artifacts produced during training.
+- `figures/` — All plots and figures.  
+- `tables/` — Summary and comparison tables.  
+- `metrics/` — Metric dumps (CSV/JSON) for runs.
 
-- `models/baseline/` — Saved logistic regression and simple baseline model files.
-- `models/xgboost/` — Saved boosted tree models and tuning outputs.
-- `models/calibrated/` — Calibrated versions of trained models used for reliable probability outputs.
-- `models/artifacts/` — Supporting objects such as scalers, encoders, selected feature lists, preprocessing pipelines, and metadata.
+### `tests/`
 
-## `reports/`
+- `test_data_loader.py` — Tests for data loading and schema.  
+- `test_features.py` — Tests for feature generation.  
+- `test_training.py` — Tests for training logic and saved artifacts.  
+- `test_inference.py` — Tests for inference on sample inputs.  
+- `test_app_smoke.py` — Smoke tests to ensure the app starts.
 
-Stores project outputs that are meant to be inspected by humans rather than consumed directly by code.
+### `scripts/`
 
-- `reports/figures/` — Plots for EDA, missingness analysis, ROC/PR curves, calibration curves, SHAP summaries, and dashboard screenshots.
-- `reports/tables/` — Comparison tables for models, features, thresholds, and subgroup results.
-- `reports/metrics/` — Saved metric summaries in CSV or JSON format for experiment tracking.
+- `run_training.py` — CLI for training pipeline.  
+- `run_inference.py` — CLI for running inference on new data.  
+- `generate_sample_input.py` — Generate example patient input files.  
+- `export_metrics.py` — Export metrics and comparisons to `reports/`.
 
-## `tests/`
+### `deployment/`
 
-This folder contains automated tests, which are important for ensuring the preprocessing logic, feature generation, and app inference do not silently break during refactoring. Dedicated test directories are standard in Python projects.
+- `Dockerfile` — Container specification for model + app deployment.  
+- `streamlit_config.toml` — Streamlit configuration (theme, port, etc.).
 
-- `test_data_loader.py` — Tests file reading, schema consistency, and patient loading behavior.
-- `test_features.py` — Tests rolling statistics, trend generation, missingness features, and output shapes.
-- `test_training.py` — Tests that training functions run correctly and save expected artifacts.
-- `test_inference.py` — Tests inference on sample patient inputs and validates probability outputs.
-- `test_app_smoke.py` — Basic smoke test to ensure the Streamlit app launches and core imports work.
+### Workflow summary
 
-## `scripts/`
-
-This folder contains convenient command-line scripts for repeated actions. Keeping these tasks in scripts avoids depending on notebooks for operational workflows. 
-- `run_training.py` — Starts the end-to-end training pipeline from processed data to saved models.
-- `run_inference.py` — Runs prediction on a new patient file or batch of files.
-- `generate_sample_input.py` — Creates a valid demo patient input file for testing the app.
-- `export_metrics.py` — Exports final metrics, threshold tables, or experiment summaries to `reports/`.
-
-## `deployment/`
-
-This folder contains files required to package and deploy the application.
-
-- `Dockerfile` — Defines the containerized environment for reproducible deployment of the model and Streamlit app, a common step for production-ready ML dashboards. 
-- `streamlit_config.toml` — Streamlit server configuration such as theme, port, headless mode, and UI settings. 
-
-## Workflow summary
-
-The intended project flow is:
-
-1. Download and inspect raw ICU data in `data/raw/`.
-2. Explore and prototype ideas in `notebooks/`.
-3. Move stable logic into `src/earlysepsis/`.
-4. Train and calibrate supervised models through `pipelines/` and `scripts/`.
-5. Save artifacts in `models/`.
-6. Store figures and result summaries in `reports/`.
-7. Validate reliability with `tests/`.
-8. Serve predictions and explanations through the Streamlit app in `src/earlysepsis/app/`. 
+1. Download and inspect raw ICU data in `data/raw/`.  
+2. Explore and prototype in `notebooks/`.  
+3. Move stable logic into `src/earlysepsis/`.  
+4. Train and calibrate models via `pipelines/` and `scripts/`.  
+5. Save trained artifacts in `models/`.  
+6. Store plots, tables, and metrics in `reports/`.  
+7. Keep everything robust with `tests/`.  
+8. Serve predictions with the Streamlit app in `src/earlysepsis/app/`.
 
 ***
+
+# 06/MAY/2026
+
+## Progress log: merging training sets
+
+Today’s focus was on **understanding and merging the large training datasets (training Set A and Set B)** for the PhysioNet 2019 sepsis data.
+
+- Explored the structure of `training_setA` and `training_setB`, where each `.psv` file represents one ICU patient stay with hourly observations.
+- Implemented a data-loading routine in `01_data_understanding.ipynb` to:
+  - Iterate over all patient files in each training folder.  
+  - Read each `.psv` file with `pandas.read_csv(sep="|")`.  
+  - Add `patient_id` (from the filename) and `source_set` (`"A"` or `"B"`) columns to preserve patient identity and dataset origin.  
+  - Append each patient’s dataframe to a list and then **concatenate** them into a single `DataFrame` for analysis.
+- Combined Set A and Set B into one merged dataframe for EDA, while still keeping the raw files separated on disk.
+- Saved the merged hourly-level dataset to `data/interim/` (e.g. `all_patients.parquet`) to avoid re-reading and re-merging 40k files in later notebooks.
+- Verified the merge by checking:
+  - Number of unique `patient_id` values.  
+  - Distribution of `source_set` (`"A"` vs `"B"`).  
+  - Presence and distribution of `SepsisLabel` across patients and hours.
+
+This gives a **single, analysis-ready dataset** spanning all training patients, with clear provenance, and will be the starting point for further EDA, missingness analysis, and feature engineering in the next steps.
+
+***
+
+**NOTE:** The raw data contains 1k files instead of 40k due to github restrictiion on UI processing. You can download the data from:
+https://www.kaggle.com/datasets/salikhussaini49/prediction-of-sepsis
+
