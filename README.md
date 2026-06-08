@@ -308,5 +308,5 @@ This analysis serves as an exploratory step to understand whether heart rate beh
 
 A sample visualization of heart rate trajectories for 10 randomly selected sepsis-negative patients is included alongside this log entry.
 
-![Sepsis negative patients](images\sepsis_negative.png)
-![Sepsis positive patients](images\sepsis_positive.png)
+![Sepsis negative patients](images/sepsis_negative.png)
+![Sepsis positive patients](images/sepsis_positive.png)
