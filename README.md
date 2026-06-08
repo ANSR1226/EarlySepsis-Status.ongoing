@@ -1,4 +1,4 @@
-# 05/MAY/2026
+# 05/JUNE/2026
 
 ## Project Structure
 
@@ -211,7 +211,7 @@ Main Python package with reusable source code.
 
 ***
 
-# 06/MAY/2026
+# 06/JUNE/2026
 
 ## Progress log: merging training sets
 
@@ -237,3 +237,76 @@ This gives a **single, analysis-ready dataset** spanning all training patients, 
 **NOTE:** The raw data contains 1k files instead of 40k due to github restrictiion on UI processing. You can download the data from:
 https://www.kaggle.com/datasets/salikhussaini49/prediction-of-sepsis
 
+# 07/JUNE/2026
+## Progress log: merged training sets A and B
+On 7 June 2026, I completed merging all patient files from the two training sets:
+
+data/raw/training/training_setA
+
+data/raw/training/training_setB
+
+What was done
+Iterated over all .psv patient files in both folders.
+
+Read each file with pandas.read_csv(sep="|").
+
+Added:
+
+patient_id (from the filename) to uniquely identify each patient.
+
+source_set ("A" or "B") to track which set each record came from.
+
+Concatented all patient dataframes into a two merged dataframe using pd.concat.
+
+Saved the merged dataset to:
+
+data/interim/merged_setA.csv
+data/interim/merged_setB.csv
+
+so that subsequent notebooks don’t need to re-read and re-merge ~40k files every time.
+
+# 08/JUNE/2026
+## Progress log: analysed heart rate in sepsis vs non-sepsis patients
+
+On 8 June 2026, I analysed heart rate (`HR`) patterns in sepsis-positive and sepsis-negative patients to visually compare how heart rate changes across ICU stay time.
+
+What was done
+
+Filtered the dataset into:
+
+- sepsis-positive patients using `SepsisLabel == 1`
+- sepsis-negative patients using `SepsisLabel == 0`
+
+Selected only rows where heart rate was available using:
+
+```python
+dfA['HR'].notna()
+```
+
+to avoid plotting missing HR values.
+
+Randomly sampled patient IDs from both groups for visualization.
+
+Plotted heart rate against ICU stay hours using:
+
+- `HR` as the y-axis
+- `ICULOS` as the x-axis
+
+Used matplotlib subplots to display multiple patient graphs inside a single figure frame.
+
+Added:
+
+- subplot titles for each patient ID
+- a main figure title using `plt.suptitle()`
+
+Used separate visualizations for sepsis and non-sepsis patients to compare trends more clearly.
+
+Observed that some patients did not have heart rate recorded for all ICU hours, so rows with missing HR were skipped during plotting.
+
+
+This analysis serves as an exploratory step to understand whether heart rate behavior differs between sepsis and non-sepsis patients before moving to feature engineering or statistical comparison.
+
+A sample visualization of heart rate trajectories for 10 randomly selected sepsis-negative patients is included alongside this log entry.
+
+![Sepsis negative patients](images\sepsis_negative.png)
+![Sepsis positive patients](images\sepsis_positive.png)
