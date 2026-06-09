@@ -310,3 +310,63 @@ A sample visualization of heart rate trajectories for 10 randomly selected sepsi
 
 ![Sepsis negative patients](images/sepsis_negative.png)
 ![Sepsis positive patients](images/sepsis_positive.png)
+
+# 09/JUNE/2026
+## Progress log: grouped attributes and reviewed missing-value percentages
+
+On 9 June 2026, the dataset attributes were organized into clinically meaningful groups and their non-null percentages were reviewed to decide which variables should be retained for exploratory analysis and later model development.[1][2]
+
+## What was done
+
+Grouped the dataset columns into the following categories:
+
+- vital signs
+- blood gas function
+- metabolic markers
+- kidney function
+- liver function
+- hematology
+- cardiac marker
+- demographics
+- time and label columns
+
+Used these groups to define a `must_keep` feature list containing:
+
+- `vital_signs`
+- `metabolic`
+- `kidney_function`
+- `hematology`
+- `demographics`
+
+These groups were treated as priority features because they contain core physiologic and organ-function variables relevant to sepsis assessment, such as heart rate, blood pressure, temperature, lactate, renal markers, inflammatory markers, and patient context.[2][3][4]
+
+Calculated the non-null percentage of each attribute using the ratio of non-missing values to total rows in the dataframe. In pandas, functions such as `notna()` are used to identify non-missing values, and this made it possible to examine feature sparsity before plotting or model preparation.[5][6]
+
+Used a filtering loop to print attributes with less than 50% non-null values that were not part of the `must_keep` list.
+
+Corrected the membership-check logic from `x not in [must_keep]` to `x not in must_keep`, which fixed the filtering behavior and returned only the intended optional sparse attributes.
+
+## Sparse optional attributes identified
+
+The following attributes were found to be below 50% non-null and outside the main must-keep groups:
+
+- `FiO2` — 14.19%
+- `pH` — 11.47%
+- `PaCO2` — 8.77%
+- `SaO2` — 4.96%
+- `AST` — 1.50%
+- `Alkalinephos` — 1.46%
+- `Bilirubin_direct` — 0.15%
+- `Glucose` — 12.23%
+- `Bilirubin_total` — 1.23%
+- `TroponinI` — 0.12%
+
+## Interpretation
+
+This review showed that several optional laboratory and blood-gas variables are highly sparse, especially liver markers and TroponinI, while some variables such as `FiO2`, `pH`, `PaCO2`, and `Glucose` may still be worth keeping for a richer model despite low coverage.
+
+It also confirmed that the core variables needed for early sepsis modeling should remain centered on vital signs, metabolic markers, kidney-related variables, hematology features, and demographic information, since vital sign assessment and organ dysfunction are central to sepsis evaluation in ICU settings.
+
+## Next step
+
+The next step is to begin EDA on the retained important variables, starting with vital signs and other must-keep features, and then decide whether the sparse optional variables should be included in the first baseline model or left for later experiments.
