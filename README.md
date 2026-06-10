@@ -314,7 +314,7 @@ A sample visualization of heart rate trajectories for 10 randomly selected sepsi
 # 09/JUNE/2026
 ## Progress log: grouped attributes and reviewed missing-value percentages
 
-On 9 June 2026, the dataset attributes were organized into clinically meaningful groups and their non-null percentages were reviewed to decide which variables should be retained for exploratory analysis and later model development.[1][2]
+On 9 June 2026, the dataset attributes were organized into clinically meaningful groups and their non-null percentages were reviewed to decide which variables should be retained for exploratory analysis and later model development.
 
 ## What was done
 
@@ -338,9 +338,9 @@ Used these groups to define a `must_keep` feature list containing:
 - `hematology`
 - `demographics`
 
-These groups were treated as priority features because they contain core physiologic and organ-function variables relevant to sepsis assessment, such as heart rate, blood pressure, temperature, lactate, renal markers, inflammatory markers, and patient context.[2][3][4]
+These groups were treated as priority features because they contain core physiologic and organ-function variables relevant to sepsis assessment, such as heart rate, blood pressure, temperature, lactate, renal markers, inflammatory markers, and patient context.
 
-Calculated the non-null percentage of each attribute using the ratio of non-missing values to total rows in the dataframe. In pandas, functions such as `notna()` are used to identify non-missing values, and this made it possible to examine feature sparsity before plotting or model preparation.[5][6]
+Calculated the non-null percentage of each attribute using the ratio of non-missing values to total rows in the dataframe. In pandas, functions such as `notna()` are used to identify non-missing values, and this made it possible to examine feature sparsity before plotting or model preparation.
 
 Used a filtering loop to print attributes with less than 50% non-null values that were not part of the `must_keep` list.
 
@@ -370,3 +370,95 @@ It also confirmed that the core variables needed for early sepsis modeling shoul
 ## Next step
 
 The next step is to begin EDA on the retained important variables, starting with vital signs and other must-keep features, and then decide whether the sparse optional variables should be included in the first baseline model or left for later experiments.
+
+# 10/JUNE/2026
+## Progress log: clarified patient-level modeling, missingness plotting, and EDA direction
+On 10 June 2026, the work moved from feature grouping into a clearer modeling and exploratory-analysis plan. The main goal of the day was to understand how the hourly ICU records should be converted into a patient-level dataset, how missingness should be visualized, and what additional EDA tasks should be completed before baseline model training.
+
+## What was done
+Clarified that the current dataset contains multiple hourly rows for each patient, while the planned baseline machine-learning model should use one row per patient rather than one row per hour.
+
+Understood how groupby('patient_id') works in pandas as a split-apply-combine operation that groups all rows of the same patient together and allows patient-level summaries to be computed from hourly measurements.
+
+Defined the idea of building a new patient-level dataset by aggregating important variables such as:
+
+HR
+O2Sat
+Temp
+SBP
+MAP
+DBP
+Resp
+Lactate
+Creatinine
+BUN
+WBC
+Platelets
+Age
+Gender
+HospAdmTime
+Unit1
+Unit2
+
+Outlined the main summary features to calculate per patient for selected numeric variables:
+
+mean
+standard deviation
+minimum
+maximum
+first value
+last value
+trend (last - first)
+number of observations
+missing percentage
+
+This established the structure for a one-row-per-patient baseline table that can later be used for XGBoost or other classical machine-learning models.
+
+## Missingness work
+Worked on understanding missing-data exploration more practically instead of treating all incomplete columns as immediate drop candidates. It was recognized that ICU datasets naturally contain sparse laboratory variables and that missingness itself can later be transformed into useful features such as n_obs and missing_pct at the patient level.
+
+Started plotting missingness percentages for selected columns using the pattern:
+
+dfA[col].isna().mean() * 100
+
+Used a bar-chart approach in Matplotlib to visualize missing percentages for selected features, and learned how to rotate x-axis labels and annotate bars with the exact percentage value for readability.
+
+Also clarified that in plt.xticks(rotation=45, ha='right'), the parameter ha means horizontal alignment, which helps keep tilted column names readable when several features are shown on the x-axis.
+
+![Missingness Visualization](image/pct_missing_values_cols.png)
+
+## EDA understanding gained
+Created a clearer checklist for what should still be done in EDA before modeling begins. The planned EDA now includes:
+
+plotting missingness by column
+
+reviewing univariate distributions of important variables
+
+comparing sepsis vs non-sepsis groups
+
+checking trends over ICULOS
+
+examining correlations among key features
+
+summarizing variables at the patient level
+
+checking outliers
+
+reviewing class balance and onset behavior
+
+This made the next stage of analysis more structured and focused on the variables most relevant to the baseline model.
+
+Dataset interpretation notes
+Clarified that the Gender column is already numerically encoded in the dataset and should be treated as a binary feature in the baseline model. It was also noted that this binary encoding reflects a limitation of the available data because non-binary and other gender identities are not represented in many legacy medical datasets.
+
+Clarified that learning RNNs or LSTMs is not necessary for the first version of the project. A baseline based on engineered patient-level features and XGBoost remains a valid and commonly used approach in early sepsis prediction research.
+
+Research direction refined
+The publication goal was discussed more directly, and it was concluded that a simple aggregate-feature model alone is unlikely to be enough for a strong paper because many studies have already explored early sepsis prediction on the PhysioNet dataset.
+
+A more promising direction was identified: first build a strong baseline using patient-level aggregate features, then improve it with temporal or time-dependent features such as trends, slopes, window-based summaries, missingness-derived signals, and interpretability analysis.
+
+## Next step
+The next step is to complete the remaining EDA on the selected important variables, finalize the missingness plots, and then build the first patient-level aggregated dataset using groupby('patient_id').
+
+After that, the baseline XGBoost model can be trained and evaluated, and its results can be saved as the reference point for later experiments with temporal features and research-oriented improvements.
