@@ -425,7 +425,7 @@ Used a bar-chart approach in Matplotlib to visualize missing percentages for sel
 
 Also clarified that in plt.xticks(rotation=45, ha='right'), the parameter ha means horizontal alignment, which helps keep tilted column names readable when several features are shown on the x-axis.
 
-![Missingness Visualization](image/pct_missing_values_cols.png)
+![Missingness Visualization](images/pct_missing_values_cols.png)
 
 ## EDA understanding gained
 Created a clearer checklist for what should still be done in EDA before modeling begins. The planned EDA now includes:
