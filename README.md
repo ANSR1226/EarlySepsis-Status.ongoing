@@ -462,3 +462,74 @@ A more promising direction was identified: first build a strong baseline using p
 The next step is to complete the remaining EDA on the selected important variables, finalize the missingness plots, and then build the first patient-level aggregated dataset using groupby('patient_id').
 
 After that, the baseline XGBoost model can be trained and evaluated, and its results can be saved as the reference point for later experiments with temporal features and research-oriented improvements.
+
+Absolutely — you want a **README template** with clear placeholders where you can later insert images yourself. GitHub README files support relative image paths, like `![alt text](images/filename.png)`, or HTML `<img>` tags if you want sizing control. [bytegoblin](https://bytegoblin.io/blog/how-to-add-images-to-readme-md-on-github)
+
+Here’s a clean README draft for your **June 12 work** with image slots built in.
+
+***
+
+# 12/JUNE/2026
+
+## Progress log : Today I cleaned the dataset, handled missing values, inspected outliers, and prepared the data for logistic regression. The goal was to build a strong preprocessing pipeline before model training.
+
+## Dataset overview
+
+I started by checking the dataset shape, feature types, and missing values. The dataframe contains lab summaries, vital-sign summaries, demographic variables, and the binary sepsis target.
+
+
+## Missing value handling
+
+I separated the columns into three groups:
+
+- Columns to drop because they were too sparse or not useful for the baseline.
+- Columns to impute with median values.
+- Columns to keep for later experimentation.
+
+I dropped the very sparse `Fibrinogen_*` columns and `Unit1_first` / `Unit2_first`. For the remaining numeric columns with missing values, I used median imputation.
+
+
+## Outlier inspection
+
+I created boxplots for the features to identify skewed variables and extreme values. This showed that many lab-related features had long right tails and strong outliers, especially variables like lactate, PTT, FiO2, PaCO2, creatinine, BUN, and glucose-related features.
+
+![Outlier Analysis](images/Column_Outlier_LogisticRegressor.png)
+
+## Log transformation
+
+Because logistic regression is sensitive to skewed distributions, I identified a list of heavily skewed features and applied `log1p` to them. I used `log1p` rather than plain log because it handles zero values safely.
+
+![After Log Transforming](images/post_log_trans_logisticRegressor.png)
+
+## Feature preparation
+
+After cleaning and transformation, I created:
+
+- a feature list,
+- a target list,
+- and a final modeling dataframe for logistic regression.
+
+This ensured that the training data was consistent and ready for the next steps.
+
+[Insert image here: feature list or final dataframe preview]
+
+## Logistic regression setup
+
+The final preprocessing flow for logistic regression was:
+
+1. Drop sparse columns.
+2. Impute missing numeric values.
+3. Apply log transformation to skewed features.
+4. Scale features.
+5. Train logistic regression.
+
+## Notes from today
+
+A few important things I learned today:
+
+- Median imputation should be fit on the training set only.
+- `log1p` is useful for skewed positive features.
+- `Unit1_first` and `Unit2_first` are better treated as categorical or dropped for the baseline.
+- Boxplots are very useful for spotting highly skewed lab variables.
+
+***
