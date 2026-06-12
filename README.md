@@ -469,13 +469,19 @@ Here’s a clean README draft for your **June 12 work** with image slots built i
 
 ***
 
+Absolutely — here is a full README draft you can use from the start, with clear places to insert images later. I’ve written it so you can keep the structure and just drop screenshots or plots into the marked spots. The confusion matrix and classification report fit naturally in the evaluation section, and GitHub-style markdown image links are the standard way to embed them. [aionlinecourse](https://www.aionlinecourse.com/blog/how-to-create-image-of-confusion-matrix-in-python)
+
+***
+
 # 12/JUNE/2026
 
-## Progress log : Today I cleaned the dataset, handled missing values, inspected outliers, and prepared the data for logistic regression. The goal was to build a strong preprocessing pipeline before model training.
+## Progress log
+
+Today I cleaned the dataset, handled missing values, inspected outliers, transformed skewed features, and trained a logistic regression model for sepsis prediction. The goal was to build a strong preprocessing pipeline and evaluate a baseline classifier on the final dataset.
 
 ## Dataset overview
 
-I started by checking the dataset shape, feature types, and missing values. The dataframe contains lab summaries, vital-sign summaries, demographic variables, and the binary sepsis target.
+I started by checking the dataframe shape, feature types, and missing values. The dataset contains lab summary features, vital-sign summary features, demographic variables, ICU stay information, and the binary sepsis label.
 
 
 ## Missing value handling
@@ -499,7 +505,7 @@ I created boxplots for the features to identify skewed variables and extreme val
 
 Because logistic regression is sensitive to skewed distributions, I identified a list of heavily skewed features and applied `log1p` to them. I used `log1p` rather than plain log because it handles zero values safely.
 
-![After Log Transforming](images/post_log_trans_logisticRegressor.png)
+![After log Transformation](images/post_log_trans_logisticRegressor.png)
 
 ## Feature preparation
 
@@ -511,8 +517,6 @@ After cleaning and transformation, I created:
 
 This ensured that the training data was consistent and ready for the next steps.
 
-[Insert image here: feature list or final dataframe preview]
-
 ## Logistic regression setup
 
 The final preprocessing flow for logistic regression was:
@@ -523,6 +527,37 @@ The final preprocessing flow for logistic regression was:
 4. Scale features.
 5. Train logistic regression.
 
+I used logistic regression as a baseline because it is interpretable and performs well when the input is carefully prepared.
+
+[Insert image here: model pipeline diagram or code screenshot]
+
+## Model evaluation
+
+After training, I evaluated the model using a confusion matrix and a classification report. The evaluation showed that the model found many positive sepsis cases, but it also produced a large number of false positives, which lowered precision for the positive class.
+
+### Confusion matrix
+
+![Confusion matrix (Log_Reg)](images/cm_log_reg.png)
+
+### Classification report
+
+![Classification report (Log_Reg)](images/report_log_reg.png)
+
+The main results were:
+
+- True Negatives: 14,273
+- True Positives: 1,046
+- False Positives: 4,273
+- False Negatives: 744
+
+This gave:
+- Accuracy: 0.75
+- Positive class precision: 0.20
+- Positive class recall: 0.58
+- Positive class F1-score: 0.29
+
+These results suggest the model is better at catching sepsis cases than at avoiding false alarms.
+
 ## Notes from today
 
 A few important things I learned today:
@@ -531,5 +566,6 @@ A few important things I learned today:
 - `log1p` is useful for skewed positive features.
 - `Unit1_first` and `Unit2_first` are better treated as categorical or dropped for the baseline.
 - Boxplots are very useful for spotting highly skewed lab variables.
+- Accuracy alone is not enough for imbalanced classification problems.
 
 ***
