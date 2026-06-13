@@ -198,17 +198,6 @@ Main Python package with reusable source code.
 - `Dockerfile` — Container specification for model + app deployment.  
 - `streamlit_config.toml` — Streamlit configuration (theme, port, etc.).
 
-### Workflow summary
-
-1. Download and inspect raw ICU data in `data/raw/`.  
-2. Explore and prototype in `notebooks/`.  
-3. Move stable logic into `src/earlysepsis/`.  
-4. Train and calibrate models via `pipelines/` and `scripts/`.  
-5. Save trained artifacts in `models/`.  
-6. Store plots, tables, and metrics in `reports/`.  
-7. Keep everything robust with `tests/`.  
-8. Serve predictions with the Streamlit app in `src/earlysepsis/app/`.
-
 ***
 
 # 06/JUNE/2026
