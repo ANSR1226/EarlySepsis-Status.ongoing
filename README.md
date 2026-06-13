@@ -451,15 +451,6 @@ A more promising direction was identified: first build a strong baseline using p
 The next step is to complete the remaining EDA on the selected important variables, finalize the missingness plots, and then build the first patient-level aggregated dataset using groupby('patient_id').
 
 After that, the baseline XGBoost model can be trained and evaluated, and its results can be saved as the reference point for later experiments with temporal features and research-oriented improvements.
-
-Absolutely — you want a **README template** with clear placeholders where you can later insert images yourself. GitHub README files support relative image paths, like `![alt text](images/filename.png)`, or HTML `<img>` tags if you want sizing control. [bytegoblin](https://bytegoblin.io/blog/how-to-add-images-to-readme-md-on-github)
-
-Here’s a clean README draft for your **June 12 work** with image slots built in.
-
-***
-
-Absolutely — here is a full README draft you can use from the start, with clear places to insert images later. I’ve written it so you can keep the structure and just drop screenshots or plots into the marked spots. The confusion matrix and classification report fit naturally in the evaluation section, and GitHub-style markdown image links are the standard way to embed them. [aionlinecourse](https://www.aionlinecourse.com/blog/how-to-create-image-of-confusion-matrix-in-python)
-
 ***
 
 # 12/JUNE/2026
@@ -562,12 +553,17 @@ A few important things I learned today:
 # 13/June/2026
 ## Progress Log : From misleading to realily (The story)
 Today when I trained the second baseline model the Random Forest model went from a misleading “perfect” score to a believable clinical classifier after I removed the leakage-heavy features. The first version looked miraculous, but it was really learning shortcuts from behavior-tracking variables like ICU time and measurement counts rather than true patient signal.
+### Misleading Confusion Matrix
 ![Misleading Confusion Matrix](images/cm_random_forest(leaky_data).png)
 
+### Detected the leaky features
 ![Detected the leaky features](images/leaky_features_rf_clf.png)
 
 After cleaning the feature set, the model produced a much more realistic result: accuracy of 88.76%, minority-class precision of 43.25%, minority-class recall of 88.55%, and F1-score of 0.58. That tradeoff makes sense for an imbalanced medical dataset, where catching as many positive cases as possible is often more important than avoiding every false alarm.
+
+### True Confusion Matrix (makes sense)
 ![True Confusion Matrix (makes sense)](images/cm_random_forest(true).png)
+### True Classification Report
 ![True Classification Report](images/report_rf_clf(true).png)
 
 The biggest lesson was that feature importance can reveal leakage when variables like ICULOS_max, *_count, and other time-dependent signals dominate the ranking. Once those were removed, the model stopped “cheating” and started showing genuine predictive power on unseen clinical data.
