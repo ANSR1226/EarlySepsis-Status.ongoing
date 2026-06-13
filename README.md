@@ -569,3 +569,19 @@ A few important things I learned today:
 - Accuracy alone is not enough for imbalanced classification problems.
 
 ***
+
+# 13/June/2026
+## Progress Log : From misleading to realily (The story)
+Today when I trained the second baseline model the Random Forest model went from a misleading “perfect” score to a believable clinical classifier after I removed the leakage-heavy features. The first version looked miraculous, but it was really learning shortcuts from behavior-tracking variables like ICU time and measurement counts rather than true patient signal.
+![Misleading Confusion Matrix](images/cm_random_forest(leaky_data).png)
+
+![Detected the leaky features](images/leaky_features_rf_clf.png)
+
+After cleaning the feature set, the model produced a much more realistic result: accuracy of 88.76%, minority-class precision of 43.25%, minority-class recall of 88.55%, and F1-score of 0.58. That tradeoff makes sense for an imbalanced medical dataset, where catching as many positive cases as possible is often more important than avoiding every false alarm.
+![True Confusion Matrix (makes sense)](images/cm_random_forest(true).png)
+![True Classification Report](images/report_rf_clf(true).png)
+
+The biggest lesson was that feature importance can reveal leakage when variables like ICULOS_max, *_count, and other time-dependent signals dominate the ranking. Once those were removed, the model stopped “cheating” and started showing genuine predictive power on unseen clinical data.
+
+Next, I would tune the decision threshold, compare against logistic regression, and check PR-AUC instead of relying on accuracy alone. That will help decide whether the model is best used as a screening tool or needs further refinement before any serious use. Also extending to boosing model and deploying is the next objective.
+Feeling Excited !!
